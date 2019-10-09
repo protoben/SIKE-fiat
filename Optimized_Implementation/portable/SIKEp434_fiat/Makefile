@@ -25,10 +25,16 @@ endif
 
 ifeq "$(OPT_LEVEL)" "GENERIC"
     USE_OPT_LEVEL=_GENERIC_
+else ifeq "$(OPT_LEVEL)" "FIAT"
+    USE_OPT_LEVEL=_FIAT_
+else ifeq "$(OPT_LEVEL)" "FAST"
+    USE_OPT_LEVEL=_FAST_
+else ifeq "$(OPT_LEVEL)" "FAST_FIAT"
+    USE_OPT_LEVEL=_FAST_FIAT_
 endif
 
 ifeq "$(ARCHITECTURE)" "_AMD64_"
-    ifeq "$(USE_OPT_LEVEL)" "_FAST_"
+    ifneq (,$(findstring _FAST_,$(USE_OPT_LEVEL)))
         MULX=-D _MULX_
         ifeq "$(USE_MULX)" "FALSE"
             MULX=
@@ -52,10 +58,14 @@ CFLAGS=$(OPT) $(ADDITIONAL_SETTINGS) -D $(ARCHITECTURE) -D __LINUX__ -D $(USE_OP
 LDFLAGS=-lm
 ifeq "$(USE_OPT_LEVEL)" "_GENERIC_"
     EXTRA_OBJECTS_434=objs434/fp_generic.o
-else ifeq "$(USE_OPT_LEVEL)" "_FIAT_" # TODO: Remove this?
-    EXTRA_OBJECTS_434=objs434/fp_generic.o
+else ifeq "$(USE_OPT_LEVEL)" "_FIAT_"
+    EXTRA_OBJECTS_434=objs434/fp_generic.o # TODO: Remove this?
+    EXTRA_OBJECTS_434+=objs434/p434_64.o
 else ifeq "$(USE_OPT_LEVEL)" "_FAST_"
     EXTRA_OBJECTS_434=objs434/fp_x64.o objs434/fp_x64_asm.o
+else ifeq "$(USE_OPT_LEVEL)" "_FAST_FIAT_"
+    EXTRA_OBJECTS_434=objs434/fp_x64.o objs434/fp_x64_asm.o
+    EXTRA_OBJECTS_434+=objs434/p434_64.o
 endif
 OBJECTS_434=objs434/P434.o $(EXTRA_OBJECTS_434) objs/random.o objs/fips202.o
 
@@ -71,12 +81,24 @@ ifeq "$(USE_OPT_LEVEL)" "_GENERIC_"
 else ifeq "$(USE_OPT_LEVEL)" "_FIAT_"
     objs434/fp_generic.o: P434/generic/fp_generic.c # TODO: Remove this?
 	    $(CC) -c $(CFLAGS) P434/generic/fp_generic.c -o objs434/fp_generic.o
+
+    objs434/p434_64.o: P434/fiat/p434_64.c
+	    $(CC) -c $(CFLAGS) P434/fiat/p434_64.c -o objs434/p434_64.o
 else ifeq "$(USE_OPT_LEVEL)" "_FAST_"
     objs434/fp_x64.o: P434/AMD64/fp_x64.c
 	    $(CC) -c $(CFLAGS) P434/AMD64/fp_x64.c -o objs434/fp_x64.o
 
     objs434/fp_x64_asm.o: P434/AMD64/fp_x64_asm.S
 	    $(CC) -c $(CFLAGS) P434/AMD64/fp_x64_asm.S -o objs434/fp_x64_asm.o
+else ifeq "$(USE_OPT_LEVEL)" "_FAST_FIAT_"
+    objs434/fp_x64.o: P434/AMD64/fp_x64.c
+	    $(CC) -c $(CFLAGS) P434/AMD64/fp_x64.c -o objs434/fp_x64.o
+
+    objs434/fp_x64_asm.o: P434/AMD64/fp_x64_asm.S
+	    $(CC) -c $(CFLAGS) P434/AMD64/fp_x64_asm.S -o objs434/fp_x64_asm.o
+
+    objs434/p434_64.o: P434/fiat/p434_64.c
+	    $(CC) -c $(CFLAGS) P434/fiat/p434_64.c -o objs434/p434_64.o
 endif
 
 objs/random.o: random/random.c

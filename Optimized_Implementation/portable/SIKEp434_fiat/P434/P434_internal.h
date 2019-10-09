@@ -242,5 +242,228 @@ void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3);
 // Given the x-coordinates of P, Q, and R, returns the value A corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x such that R=Q-P on E_A.
 void get_A(const f2elm_t xP, const f2elm_t xQ, const f2elm_t xR, f2elm_t A);
 
+#if defined(FIAT_IMPLEMENTATION)
+#include <stdint.h>
+typedef unsigned char fiat_p434_uint1;
+typedef signed char fiat_p434_int1;
+typedef signed __int128 fiat_p434_int128;
+typedef unsigned __int128 fiat_p434_uint128;
+
+
+/*
+ * The function fiat_p434_addcarryx_u64 is an addition with carry.
+ * Postconditions:
+ *   out1 = (arg1 + arg2 + arg3) mod 2^64
+ *   out2 = ⌊(arg1 + arg2 + arg3) / 2^64⌋
+ *
+ * Input Bounds:
+ *   arg1: [0x0 ~> 0x1]
+ *   arg2: [0x0 ~> 0xffffffffffffffff]
+ *   arg3: [0x0 ~> 0xffffffffffffffff]
+ * Output Bounds:
+ *   out1: [0x0 ~> 0xffffffffffffffff]
+ *   out2: [0x0 ~> 0x1]
+ */
+void fiat_p434_addcarryx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3);
+
+/*
+ * The function fiat_p434_subborrowx_u64 is a subtraction with borrow.
+ * Postconditions:
+ *   out1 = (-arg1 + arg2 + -arg3) mod 2^64
+ *   out2 = -⌊(-arg1 + arg2 + -arg3) / 2^64⌋
+ *
+ * Input Bounds:
+ *   arg1: [0x0 ~> 0x1]
+ *   arg2: [0x0 ~> 0xffffffffffffffff]
+ *   arg3: [0x0 ~> 0xffffffffffffffff]
+ * Output Bounds:
+ *   out1: [0x0 ~> 0xffffffffffffffff]
+ *   out2: [0x0 ~> 0x1]
+ */
+void fiat_p434_subborrowx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3);
+
+/*
+ * The function fiat_p434_mulx_u64 is a multiplication, returning the full double-width result.
+ * Postconditions:
+ *   out1 = (arg1 * arg2) mod 2^64
+ *   out2 = ⌊arg1 * arg2 / 2^64⌋
+ *
+ * Input Bounds:
+ *   arg1: [0x0 ~> 0xffffffffffffffff]
+ *   arg2: [0x0 ~> 0xffffffffffffffff]
+ * Output Bounds:
+ *   out1: [0x0 ~> 0xffffffffffffffff]
+ *   out2: [0x0 ~> 0xffffffffffffffff]
+ */
+void fiat_p434_mulx_u64(uint64_t* out1, uint64_t* out2, uint64_t arg1, uint64_t arg2);
+
+/*
+ * The function fiat_p434_cmovznz_u64 is a single-word conditional move.
+ * Postconditions:
+ *   out1 = (if arg1 = 0 then arg2 else arg3)
+ *
+ * Input Bounds:
+ *   arg1: [0x0 ~> 0x1]
+ *   arg2: [0x0 ~> 0xffffffffffffffff]
+ *   arg3: [0x0 ~> 0xffffffffffffffff]
+ * Output Bounds:
+ *   out1: [0x0 ~> 0xffffffffffffffff]
+ */
+void fiat_p434_cmovznz_u64(uint64_t* out1, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3);
+
+/*
+ * The function fiat_p434_mul multiplies two field elements in the Montgomery domain.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ *   0 ≤ eval arg2 < m
+ * Postconditions:
+ *   eval (from_montgomery out1) mod m = (eval (from_montgomery arg1) * eval (from_montgomery arg2)) mod m
+ *   0 ≤ eval out1 < m
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ *   arg2: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ */
+void fiat_p434_mul(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]);
+
+/*
+ * The function fiat_p434_square squares a field element in the Montgomery domain.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ * Postconditions:
+ *   eval (from_montgomery out1) mod m = (eval (from_montgomery arg1) * eval (from_montgomery arg1)) mod m
+ *   0 ≤ eval out1 < m
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ */
+void fiat_p434_square(uint64_t out1[7], const uint64_t arg1[7]);
+
+/*
+ * The function fiat_p434_add adds two field elements in the Montgomery domain.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ *   0 ≤ eval arg2 < m
+ * Postconditions:
+ *   eval (from_montgomery out1) mod m = (eval (from_montgomery arg1) + eval (from_montgomery arg2)) mod m
+ *   0 ≤ eval out1 < m
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ *   arg2: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ */
+void fiat_p434_add(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]);
+
+/*
+ * The function fiat_p434_sub subtracts two field elements in the Montgomery domain.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ *   0 ≤ eval arg2 < m
+ * Postconditions:
+ *   eval (from_montgomery out1) mod m = (eval (from_montgomery arg1) - eval (from_montgomery arg2)) mod m
+ *   0 ≤ eval out1 < m
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ *   arg2: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ */
+void fiat_p434_sub(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]);
+
+/*
+ * The function fiat_p434_opp negates a field element in the Montgomery domain.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ * Postconditions:
+ *   eval (from_montgomery out1) mod m = -eval (from_montgomery arg1) mod m
+ *   0 ≤ eval out1 < m
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ */
+void fiat_p434_opp(uint64_t out1[7], const uint64_t arg1[7]);
+
+/*
+ * The function fiat_p434_from_montgomery translates a field element out of the Montgomery domain.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ * Postconditions:
+ *   eval out1 mod m = (eval arg1 * ((2^64)⁻¹ mod m)^7) mod m
+ *   0 ≤ eval out1 < m
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ */
+void fiat_p434_from_montgomery(uint64_t out1[7], const uint64_t arg1[7]);
+
+/*
+ * The function fiat_p434_nonzero outputs a single non-zero word if the input is non-zero and zero otherwise.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ * Postconditions:
+ *   out1 = 0 ↔ eval (from_montgomery arg1) mod m = 0
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [0x0 ~> 0xffffffffffffffff]
+ */
+void fiat_p434_nonzero(uint64_t* out1, const uint64_t arg1[7]);
+
+/*
+ * The function fiat_p434_selectznz is a multi-limb conditional select.
+ * Postconditions:
+ *   eval out1 = (if arg1 = 0 then eval arg2 else eval arg3)
+ *
+ * Input Bounds:
+ *   arg1: [0x0 ~> 0x1]
+ *   arg2: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ *   arg3: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
+ */
+void fiat_p434_selectznz(uint64_t out1[7], fiat_p434_uint1 arg1, const uint64_t arg2[7], const uint64_t arg3[7]);
+
+/*
+ * The function fiat_p434_to_bytes serializes a field element in the Montgomery domain to bytes in little-endian order.
+ * Preconditions:
+ *   0 ≤ eval arg1 < m
+ * Postconditions:
+ *   out1 = map (λ x, ⌊((eval arg1 mod m) mod 2^(8 * (x + 1))) / 2^(8 * x)⌋) [0..55]
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0x3ffffffffffff]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0x3], [0x0 ~> 0x0]]
+ */
+void fiat_p434_to_bytes(uint8_t out1[56], const uint64_t arg1[7]);
+
+/*
+ * The function fiat_p434_from_bytes deserializes a field element in the Montgomery domain from bytes in little-endian order.
+ * Preconditions:
+ *   0 ≤ bytes_eval arg1 < m
+ * Postconditions:
+ *   eval out1 mod m = bytes_eval arg1 mod m
+ *   0 ≤ eval out1 < m
+ *
+ * Input Bounds:
+ *   arg1: [[0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0x3], [0x0 ~> 0x0]]
+ * Output Bounds:
+ *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0x3ffffffffffff]]
+ */
+void fiat_p434_from_bytes(uint64_t out1[7], const uint8_t arg1[56]);
+
+#endif
 
 #endif

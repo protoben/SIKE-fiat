@@ -83,8 +83,6 @@ const unsigned int strat_Bob[MAX_Bob-1] = {
 #define fpneg                         fpneg434
 #define fpdiv2                        fpdiv2_434
 #define fpcorrection                  fpcorrection434
-#define fpmul_mont                    fpmul434_mont
-#define fpsqr_mont                    fpsqr434_mont
 #define fpinv_mont                    fpinv434_mont
 #define fpinv_chain_mont              fpinv434_chain_mont
 #define fpinv_mont_bingcd             fpinv434_mont_bingcd
@@ -95,7 +93,6 @@ const unsigned int strat_Bob[MAX_Bob-1] = {
 #define fp2neg                        fp2neg434
 #define fp2div2                       fp2div2_434
 #define fp2correction                 fp2correction434
-#define fp2mul_mont                   fp2mul434_mont
 #define fp2sqr_mont                   fp2sqr434_mont
 #define fp2inv_mont                   fp2inv434_mont
 #define fp2inv_mont_bingcd            fp2inv434_mont_bingcd
@@ -106,17 +103,26 @@ const unsigned int strat_Bob[MAX_Bob-1] = {
 
 #if defined(FIAT_IMPLEMENTATION)
 #define from_mont(ma, c)              fiat_p434_from_montgomery((c), (ma))
-#define fpmul434_mont(a, b, c)        fiat_p434_mul((c), (a), (b))
-#define fpsqr434_mont(ma, mc)         fiat_p434_square((mc), (ma))
-//#define fpadd434(a, b, c) \
-//    do { \
-//        felm_t _ma, _mb; \
-//        to_mont((a), _ma); \
-//        to_mont((b), _mb); \
-//        fiat_p434_add((c), _ma, _mb); \
-//        from_mont((c), (c)); \
-//    }while(0)
-#include "../p434_64.c"
+#define fpmul_mont(a, b, c)           fiat_p434_mul((c), (a), (b))
+#define fpsqr_mont(ma, mc)            fiat_p434_square((mc), (ma))
+#define fpadd_mont(a, b, c)           fiat_p434_add((c), (a), (b))
+#define fpsub_mont(a, b, c)           fiat_p434_sub((c), (a), (b))
+#define fp2mul_mont(a, b, c)                   \
+  do {                                         \
+    felm_t a0b0, a1b1, a01, b01, a01b01, diff; \
+    fiat_p434_mul(a0b0, (a)[0], (b)[0]);       \
+    fiat_p434_mul(a1b1, (a)[1], (b)[1]);       \
+    fiat_p434_add(a01, (a)[0], (a)[1]);        \
+    fiat_p434_add(b01, (b)[0], (b)[1]);        \
+    fiat_p434_mul(a01b01, a01, b01);           \
+    fiat_p434_sub((c)[0], a0b0, a1b1);         \
+    fiat_p434_sub(diff, a01b01, a0b0);         \
+    fiat_p434_sub((c)[1], diff, a1b1);         \
+  }while(0)
+#else
+#define fpmul_mont                    fpmul434_mont
+#define fpsqr_mont                    fpsqr434_mont
+#define fp2mul_mont                   fp2mul434_mont
 #endif
 
 #include "../fpx.c"

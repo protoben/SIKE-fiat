@@ -31,17 +31,6 @@ void to_mont(const felm_t a, felm_t mc)
     fpmul_mont(a, (digit_t*)&Montgomery_R2, mc);
 }
 
-#ifndef from_mont
-void from_mont(const felm_t ma, felm_t c)
-{ // Conversion from Montgomery representation to standard representation,
-  // c = ma*R^(-1) mod p = a mod p, where ma in [0, p-1].
-    digit_t one[NWORDS_FIELD] = {0};
-    
-    one[0] = 1;
-    fpmul_mont(ma, one, c);
-    fpcorrection(c);
-}
-#endif
 
 void copy_words(const digit_t* a, digit_t* c, const unsigned int nwords)
 { // Copy wordsize digits, c = a, where lng(a) = nwords.
@@ -52,25 +41,6 @@ void copy_words(const digit_t* a, digit_t* c, const unsigned int nwords)
     }
 }
 
-#ifndef fpmul434_mont
-void fpmul_mont(const felm_t ma, const felm_t mb, felm_t mc)
-{ // Multiprecision multiplication, c = a*b mod p.
-    dfelm_t temp = {0};
-
-    mp_mul(ma, mb, temp, NWORDS_FIELD);
-    rdc_mont(temp, mc);
-}
-#endif
-
-#ifndef fpsqr434_mont
-void fpsqr_mont(const felm_t ma, felm_t mc)
-{ // Multiprecision squaring, c = a^2 mod p.
-    dfelm_t temp = {0};
-
-    mp_mul(ma, ma, temp, NWORDS_FIELD);
-    rdc_mont(temp, mc);
-}
-#endif
 
 void fpinv_mont(felm_t a)
 { // Field inversion using Montgomery arithmetic, a = a^(-1)*R mod p.
@@ -135,13 +105,13 @@ void fp2correction(f2elm_t a)
 
 __inline static void mp_addfast(const digit_t* a, const digit_t* b, digit_t* c)
 { // Multiprecision addition, c = a+b.    
-#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || defined(FIAT_IMPLEMENTATION) || (TARGET == TARGET_ARM)
-
-    mp_add(a, b, c, NWORDS_FIELD);
-    
-#elif (OS_TARGET == OS_LINUX)                 
+#if (OS_TARGET == OS_LINUX) && defined(FAST_IMPLEMENTATION)
     
     mp_add_asm(a, b, c);    
+    
+#else
+
+    mp_add(a, b, c, NWORDS_FIELD);
 
 #endif
 }
@@ -176,13 +146,13 @@ __inline unsigned int mp_sub(const digit_t* a, const digit_t* b, digit_t* c, con
 __inline static digit_t mp_subfast(const digit_t* a, const digit_t* b, digit_t* c)
 { // Multiprecision subtraction, c = a-b, where lng(a) = lng(b) = 2*NWORDS_FIELD. 
   // If c < 0 then returns mask = 0xFF..F, else mask = 0x00..0   
-#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || defined(FIAT_IMPLEMENTATION) || (TARGET == TARGET_ARM)
-
-    return (0 - (digit_t)mp_sub(a, b, c, 2*NWORDS_FIELD));
-
-#elif (OS_TARGET == OS_LINUX)                 
+#if (OS_TARGET == OS_LINUX) && defined(FAST_IMPLEMENTATION)
 
     return mp_subx2_asm(a, b, c);
+
+#else
+
+    return (0 - (digit_t)mp_sub(a, b, c, 2*NWORDS_FIELD));
 
 #endif
 }
@@ -191,16 +161,45 @@ __inline static digit_t mp_subfast(const digit_t* a, const digit_t* b, digit_t* 
 __inline static void mp_dblsubfast(const digit_t* a, const digit_t* b, digit_t* c)
 { // Multiprecision subtraction, c = c-a-b, where lng(a) = lng(b) = 2*NWORDS_FIELD. 
   // Inputs should be s.t. c > a and c > b  
-#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || defined(FIAT_IMPLEMENTATION) || (TARGET == TARGET_ARM)
+#if (OS_TARGET == OS_LINUX) && defined(FAST_IMPLEMENTATION)
+
+    mp_dblsubx2_asm(a, b, c);
+
+#else
 
     mp_sub(c, a, c, 2*NWORDS_FIELD);
     mp_sub(c, b, c, 2*NWORDS_FIELD);
 
-#elif (OS_TARGET == OS_LINUX)                 
-
-    mp_dblsubx2_asm(a, b, c);
-
 #endif
+}
+
+#ifndef FIAT_IMPLEMENTATION
+void from_mont(const felm_t ma, felm_t c)
+{ // Conversion from Montgomery representation to standard representation,
+  // c = ma*R^(-1) mod p = a mod p, where ma in [0, p-1].
+    digit_t one[NWORDS_FIELD] = {0};
+    
+    one[0] = 1;
+    fpmul_mont(ma, one, c);
+    fpcorrection(c);
+}
+
+
+void fpmul_mont(const felm_t ma, const felm_t mb, felm_t mc)
+{ // Multiprecision multiplication, c = a*b mod p.
+    dfelm_t temp = {0};
+
+    mp_mul(ma, mb, temp, NWORDS_FIELD);
+    rdc_mont(temp, mc);
+}
+
+
+void fpsqr_mont(const felm_t ma, felm_t mc)
+{ // Multiprecision squaring, c = a^2 mod p.
+    dfelm_t temp = {0};
+
+    mp_mul(ma, ma, temp, NWORDS_FIELD);
+    rdc_mont(temp, mc);
 }
 
 
@@ -229,7 +228,7 @@ void fp2mul_mont(const f2elm_t a, const f2elm_t b, f2elm_t c)
     mp_addfast((digit_t*)&tt1[NWORDS_FIELD], t1, (digit_t*)&tt1[NWORDS_FIELD]);
     rdc_mont(tt1, c[0]);                             // c[0] = a0*b0 - a1*b1
 }
-
+#endif
 
 void fpinv_chain_mont(felm_t a)
 { // Chain to compute a^(p-3)/4 using Montgomery arithmetic.

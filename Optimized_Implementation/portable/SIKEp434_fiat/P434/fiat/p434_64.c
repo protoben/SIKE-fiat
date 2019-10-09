@@ -32,7 +32,7 @@ typedef unsigned __int128 fiat_p434_uint128;
  *   out1: [0x0 ~> 0xffffffffffffffff]
  *   out2: [0x0 ~> 0x1]
  */
-static void fiat_p434_addcarryx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3) {
+__inline void fiat_p434_addcarryx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3) {
   fiat_p434_uint128 x1 = ((arg1 + (fiat_p434_uint128)arg2) + arg3);
   uint64_t x2 = (uint64_t)(x1 & UINT64_C(0xffffffffffffffff));
   fiat_p434_uint1 x3 = (fiat_p434_uint1)(x1 >> 64);
@@ -54,7 +54,7 @@ static void fiat_p434_addcarryx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat_
  *   out1: [0x0 ~> 0xffffffffffffffff]
  *   out2: [0x0 ~> 0x1]
  */
-static void fiat_p434_subborrowx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3) {
+__inline void fiat_p434_subborrowx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3) {
   fiat_p434_int128 x1 = ((arg2 - (fiat_p434_int128)arg1) - arg3);
   fiat_p434_int1 x2 = (fiat_p434_int1)(x1 >> 64);
   uint64_t x3 = (uint64_t)(x1 & UINT64_C(0xffffffffffffffff));
@@ -75,7 +75,7 @@ static void fiat_p434_subborrowx_u64(uint64_t* out1, fiat_p434_uint1* out2, fiat
  *   out1: [0x0 ~> 0xffffffffffffffff]
  *   out2: [0x0 ~> 0xffffffffffffffff]
  */
-static void fiat_p434_mulx_u64(uint64_t* out1, uint64_t* out2, uint64_t arg1, uint64_t arg2) {
+__inline void fiat_p434_mulx_u64(uint64_t* out1, uint64_t* out2, uint64_t arg1, uint64_t arg2) {
   fiat_p434_uint128 x1 = ((fiat_p434_uint128)arg1 * arg2);
   uint64_t x2 = (uint64_t)(x1 & UINT64_C(0xffffffffffffffff));
   uint64_t x3 = (uint64_t)(x1 >> 64);
@@ -95,7 +95,7 @@ static void fiat_p434_mulx_u64(uint64_t* out1, uint64_t* out2, uint64_t arg1, ui
  * Output Bounds:
  *   out1: [0x0 ~> 0xffffffffffffffff]
  */
-static void fiat_p434_cmovznz_u64(uint64_t* out1, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3) {
+__inline void fiat_p434_cmovznz_u64(uint64_t* out1, fiat_p434_uint1 arg1, uint64_t arg2, uint64_t arg3) {
   fiat_p434_uint1 x1 = (!(!arg1));
   uint64_t x2 = ((fiat_p434_int1)(0x0 - x1) & UINT64_C(0xffffffffffffffff));
   uint64_t x3 = ((x2 & arg3) | ((~x2) & arg2));
@@ -117,7 +117,7 @@ static void fiat_p434_cmovznz_u64(uint64_t* out1, fiat_p434_uint1 arg1, uint64_t
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
-static void fiat_p434_mul(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]) {
+void fiat_p434_mul(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]) {
   uint64_t x1 = (arg1[1]);
   uint64_t x2 = (arg1[2]);
   uint64_t x3 = (arg1[3]);
@@ -1106,7 +1106,7 @@ static void fiat_p434_mul(uint64_t out1[7], const uint64_t arg1[7], const uint64
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
-static void fiat_p434_square(uint64_t out1[7], const uint64_t arg1[7]) {
+void fiat_p434_square(uint64_t out1[7], const uint64_t arg1[7]) {
   uint64_t x1 = (arg1[1]);
   uint64_t x2 = (arg1[2]);
   uint64_t x3 = (arg1[3]);
@@ -2097,7 +2097,7 @@ static void fiat_p434_square(uint64_t out1[7], const uint64_t arg1[7]) {
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
-static void fiat_p434_add(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]) {
+void fiat_p434_add(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]) {
   uint64_t x1;
   fiat_p434_uint1 x2;
   fiat_p434_addcarryx_u64(&x1, &x2, 0x0, (arg1[0]), (arg2[0]));
@@ -2181,7 +2181,7 @@ static void fiat_p434_add(uint64_t out1[7], const uint64_t arg1[7], const uint64
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
-static void fiat_p434_sub(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]) {
+void fiat_p434_sub(uint64_t out1[7], const uint64_t arg1[7], const uint64_t arg2[7]) {
   uint64_t x1;
   fiat_p434_uint1 x2;
   fiat_p434_subborrowx_u64(&x1, &x2, 0x0, (arg1[0]), (arg2[0]));
@@ -2248,7 +2248,7 @@ static void fiat_p434_sub(uint64_t out1[7], const uint64_t arg1[7], const uint64
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
-static void fiat_p434_opp(uint64_t out1[7], const uint64_t arg1[7]) {
+__inline void fiat_p434_opp(uint64_t out1[7], const uint64_t arg1[7]) {
   uint64_t x1;
   fiat_p434_uint1 x2;
   fiat_p434_subborrowx_u64(&x1, &x2, 0x0, 0x0, (arg1[0]));
@@ -2315,7 +2315,7 @@ static void fiat_p434_opp(uint64_t out1[7], const uint64_t arg1[7]) {
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
-static void fiat_p434_from_montgomery(uint64_t out1[7], const uint64_t arg1[7]) {
+void fiat_p434_from_montgomery(uint64_t out1[7], const uint64_t arg1[7]) {
   uint64_t x1 = (arg1[0]);
   uint64_t x2;
   uint64_t x3;
@@ -2964,7 +2964,7 @@ static void fiat_p434_from_montgomery(uint64_t out1[7], const uint64_t arg1[7]) 
  * Output Bounds:
  *   out1: [0x0 ~> 0xffffffffffffffff]
  */
-static void fiat_p434_nonzero(uint64_t* out1, const uint64_t arg1[7]) {
+void fiat_p434_nonzero(uint64_t* out1, const uint64_t arg1[7]) {
   uint64_t x1 = ((arg1[0]) | ((arg1[1]) | ((arg1[2]) | ((arg1[3]) | ((arg1[4]) | ((arg1[5]) | ((arg1[6]) | (uint64_t)0x0)))))));
   *out1 = x1;
 }
@@ -2981,7 +2981,7 @@ static void fiat_p434_nonzero(uint64_t* out1, const uint64_t arg1[7]) {
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff]]
  */
-static void fiat_p434_selectznz(uint64_t out1[7], fiat_p434_uint1 arg1, const uint64_t arg2[7], const uint64_t arg3[7]) {
+void fiat_p434_selectznz(uint64_t out1[7], fiat_p434_uint1 arg1, const uint64_t arg2[7], const uint64_t arg3[7]) {
   uint64_t x1;
   fiat_p434_cmovznz_u64(&x1, arg1, (arg2[0]), (arg3[0]));
   uint64_t x2;
@@ -3017,7 +3017,7 @@ static void fiat_p434_selectznz(uint64_t out1[7], fiat_p434_uint1 arg1, const ui
  * Output Bounds:
  *   out1: [[0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0xff], [0x0 ~> 0x3], [0x0 ~> 0x0]]
  */
-static void fiat_p434_to_bytes(uint8_t out1[56], const uint64_t arg1[7]) {
+void fiat_p434_to_bytes(uint8_t out1[56], const uint64_t arg1[7]) {
   uint64_t x1 = (arg1[6]);
   uint64_t x2 = (arg1[5]);
   uint64_t x3 = (arg1[4]);
@@ -3199,7 +3199,7 @@ static void fiat_p434_to_bytes(uint8_t out1[56], const uint64_t arg1[7]) {
  * Output Bounds:
  *   out1: [[0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0xffffffffffffffff], [0x0 ~> 0x3ffffffffffff]]
  */
-static void fiat_p434_from_bytes(uint64_t out1[7], const uint8_t arg1[56]) {
+void fiat_p434_from_bytes(uint64_t out1[7], const uint8_t arg1[56]) {
   uint64_t x1 = ((uint64_t)(arg1[54]) << 48);
   uint64_t x2 = ((uint64_t)(arg1[53]) << 40);
   uint64_t x3 = ((uint64_t)(arg1[52]) << 32);

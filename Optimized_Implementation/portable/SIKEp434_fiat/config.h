@@ -81,16 +81,16 @@
 
 #if defined(_GENERIC_)                      
     #define GENERIC_IMPLEMENTATION
-#elif defined(_FAST_)                      
+#elif defined(_FAST_) || defined (_FAST_FIAT_)                      
     #define FAST_IMPLEMENTATION
-#elif defined(_FIAT_)
+#elif defined(_FIAT_) || defined (_FAST_FIAT_)
     #define FIAT_IMPLEMENTATION
 #endif
 
 
 // Extended datatype support
  
-#if defined(GENERIC_IMPLEMENTATION) || defined(FIAT_IMPLEMENTATION)
+#ifndef FAST_IMPLEMENTATION
     typedef uint64_t uint128_t[2];
 #elif (TARGET == TARGET_AMD64 && OS_TARGET == OS_LINUX) && (COMPILER == COMPILER_GCC || COMPILER == COMPILER_CLANG)
     #define UINT128_SUPPORT
@@ -138,12 +138,12 @@ static __inline unsigned int is_digit_lessthan_ct(digit_t x, digit_t y)
 
 /********************** Macros for platform-dependent operations **********************/
 
-#if defined(GENERIC_IMPLEMENTATION) || defined(FIAT_IMPLEMENTATION) // TODO: Remove this?
+#ifndef FAST_IMPLEMENTATION
 
 // Digit multiplication
 #define MUL(multiplier, multiplicand, hi, lo)                                                     \
     digit_x_digit((multiplier), (multiplicand), &(lo));
-    
+
 // Digit addition with carry
 #define ADDC(carryIn, addend1, addend2, carryOut, sumOut)                                         \
     { digit_t tempReg = (addend1) + (digit_t)(carryIn);                                           \
@@ -156,7 +156,7 @@ static __inline unsigned int is_digit_lessthan_ct(digit_t x, digit_t y)
     unsigned int borrowReg = (is_digit_lessthan_ct((minuend), (subtrahend)) | ((borrowIn) & is_digit_zero_ct(tempReg)));  \
     (differenceOut) = tempReg - (digit_t)(borrowIn);                                              \
     (borrowOut) = borrowReg; }
-    
+
 // Shift right with flexible datatype
 #define SHIFTR(highIn, lowIn, shift, shiftOut, DigitSize)                                         \
     (shiftOut) = ((lowIn) >> (shift)) ^ ((highIn) << (DigitSize - (shift)));
